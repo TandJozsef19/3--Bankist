@@ -7,8 +7,6 @@
 /////////////////////////////////////////////////
 // Data
 
-// DIFFERENT DATA! Contains movement dates, currency and locale
-
 const account1 = {
   owner: 'Jonas Schmedtmann',
   movements: [200, 455.23, -306.5, 25000, -642.21, -133.9, 79.97, 1300],
@@ -82,39 +80,38 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
-const formatMovementsDate = function(date, locale) {
+const formatMovementsDate = function (date, locale) {
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
 
-    const calcDaysPassed = (date1, date2) => Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+  const daysPassed = calcDaysPassed(new Date(), date);
 
-    const daysPassed = calcDaysPassed(new Date(), date);
+  if (daysPassed === 0) return 'Today';
+  if (daysPassed === 1) return 'Yesterday';
+  if (daysPassed <= 7) return `${DaysPassed} days ago`;
+  else {
+    //const day = `${date.getDate()}`.padStart(2, 0);
+    //const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    //const year = date.getFullYear();
+    //return `${day}/${month}/${year}`;
 
-    if(daysPassed === 0) return 'Today';
-    if(daysPassed === 1) return 'Yesterday';
-    if(daysPassed <= 7) return `${DaysPassed} days ago`;
-    else{
-      
-      //const day = `${date.getDate()}`.padStart(2, 0);
-      //const month = `${date.getMonth() + 1}`.padStart(2, 0);
-      //const year = date.getFullYear();
-      //return `${day}/${month}/${year}`;
+    return Intl.DateTimeFormat(locale).format(date);
+  }
+};
 
-      return Intl.DateTimeFormat(locale).format(date);
-    }
-
-
-}
-
-const formatCur = function(value, locale, currency) {
+const formatCur = function (value, locale, currency) {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,
   }).format(value);
-}
+};
 
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
@@ -188,34 +185,28 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
-const startLogoutTimer = function() {
-
-  const tick = function(){
-
-    const min =String(Math.trunc(time / 60)).padStart(2, 0);
+const startLogoutTimer = function () {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
     const sec = String(time % 60).padStart(2, 0);
     //In each call, print the remaining time to UI
     labelTimer.textContent = `${min}:${sec}`;
 
-    
     // When 0 seconds, stop timer and log out user
-    if(time === 0){
+    if (time === 0) {
       clearInterval(timer);
-      labelWelcome.textContent = 'Login to get started'
+      labelWelcome.textContent = 'Login to get started';
       containerApp.style.opacity = 0;
     }
     //Decrese 1s
     time--;
-    
-  }
+  };
   //Set time to 5 minutes
   let time = 120;
   //Call the timer every second
   tick();
   const timer = setInterval(tick, 1000);
   return timer;
-
-
 };
 
 ///////////////////////////////////////
@@ -256,15 +247,18 @@ btnLogin.addEventListener('click', function (e) {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric',
-    }
+    };
 
-    labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
 
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
-    if(timer) clearInterval(timer);
+    if (timer) clearInterval(timer);
     timer = startLogoutTimer();
 
     // Update UI
@@ -316,8 +310,9 @@ btnLoan.addEventListener('click', function (e) {
       //Add loan date
       currentAccount.movementsDates.push(new Date().toISOString());
 
-    // Update UI
-    updateUI(currentAccount)}, 2000);
+      // Update UI
+      updateUI(currentAccount);
+    }, 2000);
 
     clearInterval(timer);
     timer = startLogoutTimer();
